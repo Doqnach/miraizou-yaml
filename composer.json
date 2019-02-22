@@ -1,0 +1,28 @@
+{
+  "name": "doqnach/miraizou-yaml",
+  "description": "Miraizou YAML Classes",
+  "keywords": [
+    "miraizou",
+    "yaml"
+  ],
+  "homepage": "https://miraizou.net",
+  "require": {
+    "php": "^7",
+    "swaggest/json-schema": "^0.12.7",
+    "symfony/yaml": "^4.2",
+    "symfony/config": "^4.2",
+    "mtdowling/jmespath.php": "^2.4",
+    "doqnach/miraizou-core": "dev-master"
+  },
+  "autoload": {
+    "psr-4": {
+      "Miraizou\\Yaml\\": "src/"
+    }
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/doqnach/miraizou-yaml"
+    }
+  ]
+}
