@@ -22,7 +22,7 @@
   "repositories": [
     {
       "type": "vcs",
-      "url": "https://github.com/doqnach/miraizou-yaml"
+      "url": "https://github.com/doqnach/miraizou-core"
     }
   ]
 }
