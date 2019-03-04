@@ -23,6 +23,8 @@ class YamlParser extends Parser
      * @return mixed The YAML converted to a PHP value
      *
      * @throws ParseException If the file could not be read or the YAML is not valid
+     *
+     * @see Parser::parseFile()
      */
     public function parseFile(string $filename, int $flags = 0)
     {
@@ -39,7 +41,7 @@ class YamlParser extends Parser
             try {
                 return $this->parse(file_get_contents($filename), $flags);
             } finally {
-                $this->setPrivateProperty('filename', null);
+                $this->setParentPrivateProperty('filename', null);
             }
         } catch (ReflectionException $e) {
             return parent::parseFile($filename, $flags);
@@ -55,16 +57,18 @@ class YamlParser extends Parser
      * @return mixed A PHP value
      *
      * @throws ParseException If the YAML is not valid
+     *
+     * @see Parser::parse()
      */
     public function parse(string $value, int $flags = 0)
     {
         try {
             if (false === preg_match('//u', $value)) {
-                throw new ParseException('The YAML value does not appear to be valid UTF-8.', -1, null, $this->getPrivateProperty('filename'));
+                throw new ParseException('The YAML value does not appear to be valid UTF-8.', -1, null, $this->getParentPrivateProperty('filename'));
             }
 
             if (!(self::PARSE_KEEP_REFS & $flags)) {
-                $this->setPrivateProperty('refs', []);
+                $this->setParentPrivateProperty('refs', []);
             }
 
             $mbEncoding = null;
@@ -76,18 +80,18 @@ class YamlParser extends Parser
             }
 
             try {
-                $data = $this->invokePrivateMethod('doParse', $value, $flags);
+                $data = $this->invokeParentPrivateMethod('doParse', $value, $flags);
             } finally {
                 if (null !== $mbEncoding) {
                     mb_internal_encoding($mbEncoding);
                 }
-                $this->setPrivateProperty('lines', []);
-                $this->setPrivateProperty('currentLine', '');
+                $this->setParentPrivateProperty('lines', [])
+                    ->setParentPrivateProperty('currentLine', '');
                 if (!(self::PARSE_KEEP_REFS & $flags)) {
-                    $this->setPrivateProperty('refs', []);
+                    $this->setParentPrivateProperty('refs', []);
                 }
-                $this->setPrivateProperty('skippedLineNumbers', []);
-                $this->setPrivateProperty('locallySkippedLineNumbers', []);
+                $this->setParentPrivateProperty('skippedLineNumbers', [])
+                    ->setParentPrivateProperty('locallySkippedLineNumbers', []);
             }
 
             return $data;

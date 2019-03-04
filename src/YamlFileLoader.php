@@ -22,17 +22,19 @@ class YamlFileLoader extends Loader
      * @return mixed
      *
      * @throws \Exception If something went wrong
+     * @throws FileNotFoundException
      */
     public function load($resource, $type = null, YamlParser $parser = null)
     {
-        if (!\is_file($resource) || !\is_readable($resource)) {
+        $resourcePath = \realpath($resource);
+        if (!\is_file($resourcePath) || !\is_readable($resourcePath)) {
             throw new FileNotFoundException(null, 0, null, $resource);
         }
 
-        $basepath = \dirname(\realpath($resource));
+        $basepath = \dirname($resourcePath);
 
         $parser = $parser ?? new YamlParser();
-        $configValues = $parser->parseFile($resource, Yaml::PARSE_CUSTOM_TAGS|YamlParser::PARSE_KEEP_REFS);
+        $configValues = $parser->parseFile($resourcePath, Yaml::PARSE_CUSTOM_TAGS|YamlParser::PARSE_KEEP_REFS);
 
         \array_walk_recursive($configValues, function(&$item/*, $key*/) use ($parser, $basepath) {
             if ($item instanceof TaggedValue && $item->getTag() === 'inc/file') {
@@ -48,20 +50,28 @@ class YamlFileLoader extends Loader
                         }
 
                         try {
-                            $innerConfig = $this->load($filepath, null, $parser);
+                            $includeFiles = glob($filepath) ?: [];
+                            foreach($includeFiles as $f) {
+                                $innerConfig = $this->load($f, null, $parser);
 
-                            if ($pointer === null) {
-                                $items[] = $innerConfig;
-                            } else {
-                                $items[] = search($pointer, $innerConfig);
+                                if ($pointer === null) {
+                                    $items[] = $innerConfig;
+                                } else {
+                                    $items[] = search($pointer, $innerConfig);
+                                }
                             }
                         } catch (FileNotFoundException $e) {
                             throw $e;
                         }
                     }
                 }
+
                 // TODO does this work in all cases?
-                $item = \array_merge(...$items);
+                if (count($items) > 0) {
+                    $item = \array_merge(...$items);
+                } else {
+                    $item = null;
+                }
             }
         });
 
